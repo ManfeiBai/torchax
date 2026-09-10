@@ -19,7 +19,7 @@ import copy
 import dataclasses
 import io
 import re
-from typing import Any, Optional, Union
+from typing import Any
 
 import jax
 import jax.export
@@ -398,7 +398,7 @@ class DeserializedStableHLO:
     """Executes the deserialized module with the given inputs."""
     self._compile()
     flat_args, _ = pytree.tree_flatten((args, kwargs))
-    env = torch_xla2.default_env()
+    env = torchax.default_env()
     jax_args = []
     for arg in flat_args:
       if isinstance(arg, torch.Tensor):
