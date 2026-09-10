@@ -260,13 +260,13 @@ def validate_target_version(target_version: str) -> None:
   """Validates that target_version is a valid StableHLO/VHLO version string and is supported."""
   if not isinstance(target_version, str):
     raise TypeError(
-        f"target_version must be a string, got {type(target_version).__name__}"
+      f"target_version must be a string, got {type(target_version).__name__}"
     )
 
   target_version = target_version.strip()
   if not re.match(r"^\d+\.\d+\.\d+$", target_version):
     raise ValueError(
-        f"Invalid target_version format: '{target_version}'. Expected format 'X.Y.Z' (e.g., '1.0.0')."
+      f"Invalid target_version format: '{target_version}'. Expected format 'X.Y.Z' (e.g., '1.0.0')."
     )
 
   try:
@@ -281,29 +281,29 @@ def validate_target_version(target_version: str) -> None:
         != min_version
     ):
       raise ValueError(
-          f"Unsupported target_version '{target_version}'. Version is older than "
-          f"minimum supported version '{min_version}'."
+        f"Unsupported target_version '{target_version}'. Version is older than "
+        f"minimum supported version '{min_version}'."
       )
     if (
         stablehlo_dialect.get_smaller_version(target_version, curr_version)
         != target_version
     ):
       raise ValueError(
-          f"Unsupported target_version '{target_version}'. Version is newer than "
-          f"current version '{curr_version}'."
+        f"Unsupported target_version '{target_version}'. Version is newer than "
+        f"current version '{curr_version}'."
       )
   except ValueError:
     raise
   except Exception as e:
     raise ValueError(
-        f"Invalid or unsupported target_version '{target_version}': {e}"
+      f"Invalid or unsupported target_version '{target_version}': {e}"
     ) from e
 
 
 def legalize_stablehlo_to_vhlo(
-    module_or_str: str | ir.Module,
-    target_version: str | None = None,
-    output_format: str = "bytecode",
+  module_or_str: str | ir.Module,
+  target_version: str | None = None,
+  output_format: str = "bytecode",
 ) -> bytes | str:
   """Legalizes a StableHLO module to VHLO at the specified target version."""
   if target_version is not None:
@@ -321,7 +321,7 @@ def legalize_stablehlo_to_vhlo(
         return _jax.mlir.serialize_portable_artifact(str(module_or_str), target)
     except Exception as e:
       raise RuntimeError(
-          f"Failed to serialize StableHLO module to VHLO bytecode for target_version '{target}': {e}"
+        f"Failed to serialize StableHLO module to VHLO bytecode for target_version '{target}': {e}"
       ) from e
   elif fmt in ("text", "mlir_text", "vhlo_text", "mlir"):
     try:
@@ -338,12 +338,12 @@ def legalize_stablehlo_to_vhlo(
         return str(module)
     except Exception as e:
       raise RuntimeError(
-          f"Failed to legalize StableHLO module to VHLO MLIR text for target_version '{target}': {e}"
+        f"Failed to legalize StableHLO module to VHLO MLIR text for target_version '{target}': {e}"
       ) from e
   else:
     raise ValueError(
-        f"Unsupported output_format: '{output_format}'. Supported formats: "
-        "'stablehlo', 'bytecode', 'text', 'vhlo', 'mlir_text'."
+      f"Unsupported output_format: '{output_format}'. Supported formats: "
+      "'stablehlo', 'bytecode', 'text', 'vhlo', 'mlir_text'."
     )
 
 
@@ -351,10 +351,10 @@ class DeserializedStableHLO:
   """Executable wrapper around a deserialized StableHLO MLIR module."""
 
   def __init__(
-      self,
-      module: ir.Module,
-      bytecode: bytes | None = None,
-      text: str | None = None,
+    self,
+    module: ir.Module,
+    bytecode: bytes | None = None,
+    text: str | None = None,
   ):
     self._module = module
     self._context = module.context
@@ -389,9 +389,9 @@ class DeserializedStableHLO:
       executable_devices = xc.DeviceList(tuple(backend.local_devices()))
       compile_options = xc.CompileOptions()
       self._compiled = backend.compile_and_load(
-          self._module,
-          executable_devices=executable_devices,
-          compile_options=compile_options,
+        self._module,
+        executable_devices=executable_devices,
+        compile_options=compile_options,
       )
 
   def call(self, *args, **kwargs) -> Any:
@@ -419,7 +419,7 @@ class DeserializedStableHLO:
 
 
 def deserialize_vhlo_artifact(
-    bytecode_or_text: bytes | bytearray | str,
+  bytecode_or_text: bytes | bytearray | str,
 ) -> jax.export.Exported | DeserializedStableHLO:
   """Deserializes a portable VHLO bytecode or MLIR text artifact.
 
@@ -438,7 +438,7 @@ def deserialize_vhlo_artifact(
   """
   if not isinstance(bytecode_or_text, (bytes, bytearray, str)):
     raise TypeError(
-        f"Expected bytes, bytearray, or str, got {type(bytecode_or_text).__name__}"
+      f"Expected bytes, bytearray, or str, got {type(bytecode_or_text).__name__}"
     )
 
   if isinstance(bytecode_or_text, (bytes, bytearray)):
@@ -452,9 +452,7 @@ def deserialize_vhlo_artifact(
     # Next, try deserializing as a portable artifact bytecode
     try:
       with jax_mlir.make_ir_context() as context:
-        module = _jax.mlir.deserialize_portable_artifact(
-            raw_bytes, context=context
-        )
+        module = _jax.mlir.deserialize_portable_artifact(raw_bytes, context=context)
         return DeserializedStableHLO(module, bytecode=raw_bytes)
     except Exception as e:
       # If binary deserialization failed, check if it's utf-8 encoded text
@@ -462,9 +460,7 @@ def deserialize_vhlo_artifact(
         text = raw_bytes.decode("utf-8")
         return deserialize_vhlo_artifact(text)
       except Exception:
-        raise ValueError(
-            f"Failed to deserialize VHLO artifact bytecode: {e}"
-        ) from e
+        raise ValueError(f"Failed to deserialize VHLO artifact bytecode: {e}") from e
 
   elif isinstance(bytecode_or_text, str):
     try:
@@ -479,15 +475,13 @@ def deserialize_vhlo_artifact(
           pass_manager.run(module.operation)
         return DeserializedStableHLO(module, text=bytecode_or_text)
     except Exception as e:
-      raise ValueError(
-          f"Failed to deserialize VHLO artifact text: {e}"
-      ) from e
+      raise ValueError(f"Failed to deserialize VHLO artifact text: {e}") from e
 
 
 def exported_program_to_stablehlo(
-    exported_program,
-    target_version: str | None = None,
-    output_format: str = "stablehlo",
+  exported_program,
+  target_version: str | None = None,
+  output_format: str = "stablehlo",
 ):
   """Replacement for torch_xla.stablehlo.exported_program_to_stablehlo.
 
@@ -518,24 +512,24 @@ def exported_program_to_stablehlo(
 
     if fmt == "stablehlo":
       vhlo_bytecode = legalize_stablehlo_to_vhlo(
-          jax_export.mlir_module(),
-          target,
-          output_format="bytecode",
+        jax_export.mlir_module(),
+        target,
+        output_format="bytecode",
       )
       updated_export = dataclasses.replace(
-          jax_export, mlir_module_serialized=vhlo_bytecode
+        jax_export, mlir_module_serialized=vhlo_bytecode
       )
       return weights, updated_export
     elif fmt in ("bytecode", "vhlo", "portable_artifact", "vhlo_bytecode"):
       vhlo_bytecode = legalize_stablehlo_to_vhlo(
-          jax_export.mlir_module(),
-          target,
-          output_format="bytecode",
+        jax_export.mlir_module(),
+        target,
+        output_format="bytecode",
       )
       return weights, vhlo_bytecode
     elif fmt in ("text", "mlir_text", "vhlo_text", "mlir"):
       vhlo_text = legalize_stablehlo_to_vhlo(
-          jax_export.mlir_module(), target, output_format="text"
+        jax_export.mlir_module(), target, output_format="text"
       )
       return weights, vhlo_text
     else:
@@ -549,18 +543,18 @@ def exported_program_to_stablehlo(
     return weights, jax_export
   elif fmt in ("bytecode", "vhlo_bytecode", "portable_artifact", "vhlo"):
     vhlo_bytecode = legalize_stablehlo_to_vhlo(
-        jax_export.mlir_module(), None, output_format="bytecode"
+      jax_export.mlir_module(), None, output_format="bytecode"
     )
     return weights, vhlo_bytecode
   elif fmt in ("text", "mlir_text", "mlir"):
     return weights, str(jax_export.mlir_module())
   elif fmt in ("vhlo_text",):
     vhlo_text = legalize_stablehlo_to_vhlo(
-        jax_export.mlir_module(), None, output_format="text"
+      jax_export.mlir_module(), None, output_format="text"
     )
     return weights, vhlo_text
   else:
     raise ValueError(
-        f"Unsupported output_format: '{output_format}'. Supported formats: "
-        "'stablehlo', 'bytecode', 'vhlo_bytecode', 'portable_artifact', 'vhlo', 'text', 'mlir_text', 'mlir', 'vhlo_text'."
+      f"Unsupported output_format: '{output_format}'. Supported formats: "
+      "'stablehlo', 'bytecode', 'vhlo_bytecode', 'portable_artifact', 'vhlo', 'text', 'mlir_text', 'mlir', 'vhlo_text'."
     )

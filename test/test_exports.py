@@ -164,7 +164,7 @@ class ExportTest(unittest.TestCase):
 
     # 1. Output format "stablehlo" with target_version
     weights, exp_obj = torchax.export.exported_program_to_stablehlo(
-        exported, target_version="1.0.0", output_format="stablehlo"
+      exported, target_version="1.0.0", output_format="stablehlo"
     )
     module_str = str(exp_obj.mlir_module())
     self.assertIn("func.func public @main", module_str)
@@ -174,7 +174,7 @@ class ExportTest(unittest.TestCase):
 
     # 2. Output format "bytecode" with target_version
     weights, bytecode = torchax.export.exported_program_to_stablehlo(
-        exported, target_version="1.0.0", output_format="bytecode"
+      exported, target_version="1.0.0", output_format="bytecode"
     )
     self.assertIsInstance(bytecode, bytes)
     self.assertIn(b"ML\xefR", bytecode)
@@ -182,7 +182,7 @@ class ExportTest(unittest.TestCase):
 
     # 3. Output format "text" with target_version
     weights, vhlo_text = torchax.export.exported_program_to_stablehlo(
-        exported, target_version="1.0.0", output_format="text"
+      exported, target_version="1.0.0", output_format="text"
     )
     self.assertIsInstance(vhlo_text, str)
     self.assertIn("vhlo.func_v1", vhlo_text)
@@ -196,7 +196,7 @@ class ExportTest(unittest.TestCase):
 
     for version in ("0.19.0", "1.0.0"):
       weights, bytecode = torchax.export.exported_program_to_stablehlo(
-          exported, target_version=version, output_format="bytecode"
+        exported, target_version=version, output_format="bytecode"
       )
       self.assertIsInstance(bytecode, bytes)
       self.assertIn(b"ML\xefR", bytecode)
@@ -212,7 +212,7 @@ class ExportTest(unittest.TestCase):
 
     # Test bytecode deserialization and execution
     weights, bytecode = torchax.export.exported_program_to_stablehlo(
-        exported, target_version="1.0.0", output_format="bytecode"
+      exported, target_version="1.0.0", output_format="bytecode"
     )
     deserialized_bc = torchax.export.deserialize_vhlo_artifact(bytecode)
     self.assertIn("func.func public @main", str(deserialized_bc.mlir_module()))
@@ -224,7 +224,7 @@ class ExportTest(unittest.TestCase):
 
     # Test text deserialization and execution
     weights, vhlo_text = torchax.export.exported_program_to_stablehlo(
-        exported, target_version="1.0.0", output_format="text"
+      exported, target_version="1.0.0", output_format="text"
     )
     deserialized_txt = torchax.export.deserialize_vhlo_artifact(vhlo_text)
     self.assertIn("func.func public @main", str(deserialized_txt.mlir_module()))
@@ -242,40 +242,40 @@ class ExportTest(unittest.TestCase):
     # Invalid version format
     with self.assertRaises(ValueError) as ctx:
       torchax.export.exported_program_to_stablehlo(
-          exported, target_version="invalid_ver"
+        exported, target_version="invalid_ver"
       )
     self.assertIn("Invalid target_version format", str(ctx.exception))
 
     with self.assertRaises(ValueError) as ctx:
       torchax.export.exported_program_to_stablehlo(
-          exported, target_version="1.0"
+        exported, target_version="1.0"
       )
     self.assertIn("Invalid target_version format", str(ctx.exception))
 
     # Unsupported old version
     with self.assertRaises(ValueError) as ctx:
       torchax.export.exported_program_to_stablehlo(
-          exported, target_version="0.0.1"
+        exported, target_version="0.0.1"
       )
     self.assertIn("Unsupported target_version", str(ctx.exception))
 
     # Unsupported future version
     with self.assertRaises(ValueError) as ctx:
       torchax.export.exported_program_to_stablehlo(
-          exported, target_version="999.0.0"
+        exported, target_version="999.0.0"
       )
     self.assertIn("Unsupported target_version", str(ctx.exception))
 
     # Invalid type
     with self.assertRaises(TypeError):
       torchax.export.exported_program_to_stablehlo(
-          exported, target_version=123
+        exported, target_version=123
       )
 
     # Invalid output format
     with self.assertRaises(ValueError) as ctx:
       torchax.export.exported_program_to_stablehlo(
-          exported, output_format="invalid_fmt"
+        exported, output_format="invalid_fmt"
       )
     self.assertIn("Unsupported output_format", str(ctx.exception))
 
