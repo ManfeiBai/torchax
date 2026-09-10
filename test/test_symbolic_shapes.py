@@ -116,22 +116,18 @@ class SymbolicShapeTest(base_test_util.TestCase):
     dynamic_shapes = ({0: sym_a},)
 
     with torch.no_grad():
-      exported = torch.export.export(
-          model, args=args, dynamic_shapes=dynamic_shapes
-      )
+      exported = torch.export.export(model, args=args, dynamic_shapes=dynamic_shapes)
 
     # 1. Output format stablehlo with target_version
     weights, exp_obj = torchax.export.exported_program_to_stablehlo(
-        exported, target_version="1.0.0", output_format="stablehlo"
+      exported, target_version="1.0.0", output_format="stablehlo"
     )
     self.assertIsInstance(exp_obj, jax.export.Exported)
     self.assertIn(b"StableHLO_v1.0.0", exp_obj.mlir_module_serialized)
 
     # Serialize to Exported flatbuffer artifact containing VHLO bytecode
     serialized_artifact = exp_obj.serialize()
-    deserialized_exp = torchax.export.deserialize_vhlo_artifact(
-        serialized_artifact
-    )
+    deserialized_exp = torchax.export.deserialize_vhlo_artifact(serialized_artifact)
     self.assertIsInstance(deserialized_exp, jax.export.Exported)
 
     # Execute dynamic shapes across varying batch sizes
@@ -147,7 +143,7 @@ class SymbolicShapeTest(base_test_util.TestCase):
 
     # 2. Output format bytecode with target_version
     weights, bytecode = torchax.export.exported_program_to_stablehlo(
-        exported, target_version="1.0.0", output_format="bytecode"
+      exported, target_version="1.0.0", output_format="bytecode"
     )
     self.assertIsInstance(bytecode, bytes)
     self.assertIn(b"ML\xefR", bytecode)
@@ -160,7 +156,7 @@ class SymbolicShapeTest(base_test_util.TestCase):
 
     # 3. Output format text with target_version
     weights, vhlo_text = torchax.export.exported_program_to_stablehlo(
-        exported, target_version="1.0.0", output_format="text"
+      exported, target_version="1.0.0", output_format="text"
     )
     self.assertIsInstance(vhlo_text, str)
     self.assertIn("vhlo.func_v1", vhlo_text)
