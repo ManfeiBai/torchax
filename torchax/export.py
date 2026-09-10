@@ -24,6 +24,10 @@ from typing import Any, Optional, Union
 import jax
 import jax.export
 import jax.numpy as jnp
+import numpy as np
+import sympy
+import torch
+import torch._refs
 from jax._src import xla_bridge as xb
 from jax._src.interpreters import mlir as jax_mlir
 from jax._src.lib import _jax
@@ -31,10 +35,6 @@ from jax._src.lib import xla_client as xc
 from jax._src.lib.mlir import ir
 from jax._src.lib.mlir import passmanager as pm
 from jax._src.lib.mlir.dialects import hlo as stablehlo_dialect
-import numpy as np
-import sympy
-import torch
-import torch._refs
 from torch._decomp import get_decompositions
 from torch.utils import _pytree as pytree
 
@@ -301,10 +301,10 @@ def validate_target_version(target_version: str) -> None:
 
 
 def legalize_stablehlo_to_vhlo(
-    module_or_str: Union[str, ir.Module],
-    target_version: Optional[str] = None,
+    module_or_str: str | ir.Module,
+    target_version: str | None = None,
     output_format: str = "bytecode",
-) -> Union[bytes, str]:
+) -> bytes | str:
   """Legalizes a StableHLO module to VHLO at the specified target version."""
   if target_version is not None:
     validate_target_version(target_version)
@@ -353,8 +353,8 @@ class DeserializedStableHLO:
   def __init__(
       self,
       module: ir.Module,
-      bytecode: Optional[bytes] = None,
-      text: Optional[str] = None,
+      bytecode: bytes | None = None,
+      text: str | None = None,
   ):
     self._module = module
     self._context = module.context
@@ -419,8 +419,8 @@ class DeserializedStableHLO:
 
 
 def deserialize_vhlo_artifact(
-    bytecode_or_text: Union[bytes, bytearray, str],
-) -> Union[jax.export.Exported, DeserializedStableHLO]:
+    bytecode_or_text: bytes | bytearray | str,
+) -> jax.export.Exported | DeserializedStableHLO:
   """Deserializes a portable VHLO bytecode or MLIR text artifact.
 
   Args:
@@ -486,7 +486,7 @@ def deserialize_vhlo_artifact(
 
 def exported_program_to_stablehlo(
     exported_program,
-    target_version: Optional[str] = None,
+    target_version: str | None = None,
     output_format: str = "stablehlo",
 ):
   """Replacement for torch_xla.stablehlo.exported_program_to_stablehlo.
