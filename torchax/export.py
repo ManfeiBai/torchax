@@ -541,7 +541,7 @@ def exported_program_to_stablehlo(
     else:
       raise ValueError(
           f"Unsupported output_format: '{output_format}'. Supported formats: "
-          "'stablehlo', 'bytecode', 'text', 'vhlo', 'mlir_text'."
+          "'stablehlo', 'bytecode', 'vhlo', 'portable_artifact', 'vhlo_bytecode', 'text', 'mlir_text', 'vhlo_text', 'mlir'."
       )
 
   # target_version is None
@@ -562,5 +562,5 @@ def exported_program_to_stablehlo(
   else:
     raise ValueError(
         f"Unsupported output_format: '{output_format}'. Supported formats: "
-        "'stablehlo', 'bytecode', 'text', 'vhlo', 'mlir_text'."
+        "'stablehlo', 'bytecode', 'vhlo_bytecode', 'portable_artifact', 'vhlo', 'text', 'mlir_text', 'mlir', 'vhlo_text'."
     )
