@@ -121,7 +121,7 @@ class SymbolicShapeTest(base_test_util.TestCase):
       )
 
     # 1. Output format stablehlo with target_version
-    weights, exp_obj = torch_xla2.export.exported_program_to_stablehlo(
+    weights, exp_obj = torchax.export.exported_program_to_stablehlo(
         exported, target_version="1.0.0", output_format="stablehlo"
     )
     self.assertIsInstance(exp_obj, jax.export.Exported)
@@ -129,13 +129,13 @@ class SymbolicShapeTest(base_test_util.TestCase):
 
     # Serialize to Exported flatbuffer artifact containing VHLO bytecode
     serialized_artifact = exp_obj.serialize()
-    deserialized_exp = torch_xla2.export.deserialize_vhlo_artifact(
+    deserialized_exp = torchax.export.deserialize_vhlo_artifact(
         serialized_artifact
     )
     self.assertIsInstance(deserialized_exp, jax.export.Exported)
 
     # Execute dynamic shapes across varying batch sizes
-    env = torch_xla2.default_env()
+    env = torchax.default_env()
     for size in (3, 6, 9):
       test_arg = torch.rand(size)
       expected = model(test_arg)
@@ -146,27 +146,27 @@ class SymbolicShapeTest(base_test_util.TestCase):
       self.assertTrue(torch.allclose(expected, actual, atol=1e-5))
 
     # 2. Output format bytecode with target_version
-    weights, bytecode = torch_xla2.export.exported_program_to_stablehlo(
+    weights, bytecode = torchax.export.exported_program_to_stablehlo(
         exported, target_version="1.0.0", output_format="bytecode"
     )
     self.assertIsInstance(bytecode, bytes)
     self.assertIn(b"ML\xefR", bytecode)
     self.assertIn(b"StableHLO_v1.0.0", bytecode)
 
-    deserialized_bc = torch_xla2.export.deserialize_vhlo_artifact(bytecode)
+    deserialized_bc = torchax.export.deserialize_vhlo_artifact(bytecode)
     deserialized_mod_str = str(deserialized_bc.mlir_module())
     self.assertIn("tensor<?xf32>", deserialized_mod_str)
     self.assertIn("shape_assertion", deserialized_mod_str)
 
     # 3. Output format text with target_version
-    weights, vhlo_text = torch_xla2.export.exported_program_to_stablehlo(
+    weights, vhlo_text = torchax.export.exported_program_to_stablehlo(
         exported, target_version="1.0.0", output_format="text"
     )
     self.assertIsInstance(vhlo_text, str)
     self.assertIn("vhlo.func_v1", vhlo_text)
     self.assertIn("vhlo.custom_call_v1", vhlo_text)
 
-    deserialized_txt = torch_xla2.export.deserialize_vhlo_artifact(vhlo_text)
+    deserialized_txt = torchax.export.deserialize_vhlo_artifact(vhlo_text)
     txt_mod_str = str(deserialized_txt.mlir_module())
     self.assertIn("tensor<?xf32>", txt_mod_str)
 
